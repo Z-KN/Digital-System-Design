@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2017.4 (64-bit)
+# SW Build 2086221 on Fri Dec 15 20:55:39 MST 2017
+# IP Build 2085800 on Fri Dec 15 22:25:07 MST 2017
+# Start of session at: Wed Jun  5 21:27:48 2019
+# Process ID: 28752
+# Current directory: C:/Users/Hussian/Desktop/mixture/verilog/bt_uart/bt_uart.runs/char_fifo_synth_1
+# Command line: vivado.exe -log char_fifo.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source char_fifo.tcl
+# Log file: C:/Users/Hussian/Desktop/mixture/verilog/bt_uart/bt_uart.runs/char_fifo_synth_1/char_fifo.vds
+# Journal file: C:/Users/Hussian/Desktop/mixture/verilog/bt_uart/bt_uart.runs/char_fifo_synth_1\vivado.jou
+#-----------------------------------------------------------
+source char_fifo.tcl -notrace

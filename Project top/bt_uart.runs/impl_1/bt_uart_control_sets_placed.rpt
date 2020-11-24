@@ -1,0 +1,98 @@
+Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2017.4 (win64) Build 2086221 Fri Dec 15 20:55:39 MST 2017
+| Date         : Wed Jul  3 20:56:32 2019
+| Host         : DESKTOP-I864URH running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file bt_uart_control_sets_placed.rpt
+| Design       : bt_uart
+| Device       : xc7a35t
+------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Flip-Flop Distribution
+3. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Number of unique control sets                            |    31 |
+| Unused register locations in slices containing registers |   119 |
++----------------------------------------------------------+-------+
+
+
+2. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |             160 |           52 |
+| No           | No                    | Yes                    |              24 |            7 |
+| No           | Yes                   | No                     |             148 |           47 |
+| Yes          | No                    | No                     |              21 |            3 |
+| Yes          | No                    | Yes                    |               0 |            0 |
+| Yes          | Yes                   | No                     |             216 |           61 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+3. Detailed Control Set Information
+-----------------------------------
+
++---------------------------------------+---------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+------------------+----------------+
+|              Clock Signal             |                                                    Enable Signal                                                    |                                Set/Reset Signal                               | Slice Load Count | Bel Load Count |
++---------------------------------------+---------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+------------------+----------------+
+|  seg7_0/clk_s_reg_n_0                 |                                                                                                                     |                                                                               |                1 |              2 |
+|  seg7_1/clk_s_reg_n_0                 |                                                                                                                     |                                                                               |                2 |              2 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | clk_gen_i0/rst_meta_reg                                                       |                1 |              2 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 |                                                                                                                     | clk_gen_i0/rst_meta_reg                                                       |                1 |              2 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 |                                                                                                                     | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/syncstages_ff_reg[0] |                3 |              3 |
+|  seg7_1/clk_s_reg_n_0                 | seg7_1/val[3]                                                                                                       | seg7_1/val[3]_i_1__0_n_0                                                      |                2 |              4 |
+|  seg7_1/clk_s_reg_n_0                 | seg7_1/val[7]                                                                                                       | seg7_1/val[7]_i_1__0_n_0                                                      |                1 |              4 |
+|  seg7_1/clk_s_reg_n_0                 | seg7_1/val[11]                                                                                                      | seg7_1/val[11]_i_1__0_n_0                                                     |                1 |              4 |
+|  seg7_1/clk_s_reg_n_0                 | seg7_1/val[15]                                                                                                      | seg7_1/val[15]_i_1__0_n_0                                                     |                1 |              4 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | uart_tx_i0/uart_tx_ctl_i0/over_sample_cnt[3]_i_1_n_0                                                                | rst_gen_i0/reset_bridge_clk_tx_i0/rst_clk_tx                                  |                1 |              4 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | resp_gen_i0/char_cnt                                                                                                | resp_gen_i0/char_cnt[3]_i_1_n_0                                               |                1 |              4 |
+|  seg7_1/clk_s_reg_n_0                 | seg7_1/state__0                                                                                                     |                                                                               |                1 |              5 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | cmd_parse_i0/cur_cmd                                                                                                | rst_gen_i0/reset_bridge_clk_rx_i0/rst_clk_rx                                  |                2 |              7 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/gr1.gr1_int.rfwft/E[0]                   | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/SR[0]                |                2 |              8 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | uart_rx_i0/uart_rx_ctl_i0/send_char_reg[0]_0                                                                        | rst_gen_i0/reset_bridge_clk_rx_i0/rst_clk_rx                                  |                2 |              8 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/SR[0]                |                5 |             11 |
+|  seg7_0/clk_s_reg_n_0                 | seg7_0/state[1]                                                                                                     |                                                                               |                2 |             16 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | b1/prediv[16]_i_2_n_0                                                                                               | cmd_parse_i0/SR[0]                                                            |               14 |             17 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | lb_ctl_i0/debouncer_i0/meta_harden_signal_in_i0/SR[0]                         |                3 |             18 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/gr1.gr1_int.rfwft/gc0.count_d1_reg[9][0] | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/SR[0]                |                5 |             20 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | b1/beep0                                                                                                            | cmd_parse_i0/SR[0]                                                            |                6 |             21 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 | cmd_parse_i0/beepkey                                                                                                | cmd_parse_i0/SR[0]                                                            |                6 |             21 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | seg7_0/clk_s                                                                  |                7 |             27 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | seg7_1/clk_s                                                                  |                7 |             27 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | cmd_parse_i0/arg_sav_0                                                                                              | rst_gen_i0/reset_bridge_clk_rx_i0/rst_clk_rx                                  |                5 |             28 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.wsts/E[0]                           | char_fifo_i0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/syncstages_ff_reg[0] |                6 |             30 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 | cmd_parse_i0/bt_data32[31]_i_1_n_0                                                                                  | rst_gen_i0/reset_bridge_clk_rx_i0/rst_clk_rx                                  |                6 |             32 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     | rst_gen_i0/reset_bridge_clk_tx_i0/rst_clk_tx                                  |               11 |             39 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 |                                                                                                                     | rst_gen_i0/reset_bridge_clk_rx_i0/rst_clk_rx                                  |               16 |             43 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out2 |                                                                                                                     |                                                                               |               24 |             76 |
+|  clk_gen_i0/clk_core_i0/inst/clk_out1 |                                                                                                                     |                                                                               |               27 |             82 |
++---------------------------------------+---------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------+------------------+----------------+
+
+
++--------+-----------------------+
+| Fanout | Number of ControlSets |
++--------+-----------------------+
+| 2      |                     4 |
+| 3      |                     1 |
+| 4      |                     6 |
+| 5      |                     1 |
+| 7      |                     1 |
+| 8      |                     2 |
+| 11     |                     1 |
+| 16+    |                    15 |
++--------+-----------------------+
+
+
