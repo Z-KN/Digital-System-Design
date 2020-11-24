@@ -1,0 +1,1 @@
+"..\code\main.c" BROWSE INCDIR(..\code;..\user) DEBUG OBJECTEXTEND PRINT(.\main.lst) OBJECT(..\obj\main.obj)

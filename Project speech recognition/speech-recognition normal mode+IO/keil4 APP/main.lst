@@ -1,0 +1,315 @@
+C51 COMPILER V9.00   MAIN                                                                  06/22/2019 14:07:49 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN ..\obj\main.obj
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE ..\code\main.c BROWSE INCDIR(..\code;..\user) DEBUG OBJECTEXTEND PRINT(.\ma
+                    -in.lst) OBJECT(..\obj\main.obj)
+
+line level    source
+
+   1          /***************************飞音云电子****************************
+   2          **  工程名称：YS-V0.7语音识别模块驱动程序
+   3          **      CPU: STC11L08XE
+   4          **      晶振：22.1184MHZ
+   5          **      波特率：9600 bit/S
+   6          **      配套产品信息：YS-V0.7语音识别开发板
+   7          **                http://yuesheng001.taobao.com
+   8          **  作者：zdings
+   9          **  联系：751956552@qq.com
+  10          **  修改日期：2013.9.13
+  11          **  说明：口令模式+IO控制： 即每次识别时都需要说“小杰”这个口令 ，才能够进行下一级的识别
+  12          /***************************飞音云电子******************************/
+  13          #include "config.h"
+  14          /************************************************************************************/
+  15          //      nAsrStatus 用来在main主程序中表示程序运行的状态，不是LD3320芯片内部的状态寄存器
+  16          //      LD_ASR_NONE:            表示没有在作ASR识别
+  17          //      LD_ASR_RUNING：         表示LD3320正在作ASR识别中
+  18          //      LD_ASR_FOUNDOK:         表示一次识别流程结束后，有一个识别结果
+  19          //      LD_ASR_FOUNDZERO:       表示一次识别流程结束后，没有识别结果
+  20          //      LD_ASR_ERROR:           表示一次识别流程中LD3320芯片内部出现不正确的状态
+  21          /***********************************************************************************/
+  22          uint8 idata nAsrStatus=0;       
+  23          void MCU_init(); 
+  24          void ProcessInt0(); //识别处理函数
+  25          void  delay(unsigned long uldata);
+  26          void    User_handle(uint8 dat);//用户执行操作函数
+  27          void Led_test(void);//单片机工作指示
+  28          void Delay200ms();
+  29          uint8_t G0_flag=DISABLE;//运行标志，ENABLE:运行。DISABLE:禁止运行 
+  30          sbit LED=P4^2;//信号指示灯
+  31          //应用IO口定义 （模块标注 P2）
+  32          /*
+  33          sbit PA1=P1^0; //对应板上标号 P1.0
+  34          sbit PA2=P1^1;  //对应板上标号 P1.1
+  35          sbit PA3=P1^2;  //.....
+  36          sbit PA4=P1^3;  //.....
+  37          sbit PA5=P1^4;  //.....
+  38          sbit PA6=P1^5;  //.....
+  39          sbit PA7=P1^6;  //对应板上标号 P1.6
+  40          sbit PA8=P1^7;  //对应板上标号 P1.7
+  41          */
+  42          sbit LED1=P1^0;
+  43          sbit LED2=P1^1;
+  44          sbit LED3=P1^2;
+  45          sbit ALMC=P1^4;
+  46          sbit MUSIC=P1^5;
+  47          
+  48          /***********************************************************
+  49          * 名    称： void  main(void)
+  50          * 功    能： 主函数     程序入口
+  51          * 入口参数：  
+  52          * 出口参数：
+  53          * 说    明：                                     
+  54          * 调用方法： 
+C51 COMPILER V9.00   MAIN                                                                  06/22/2019 14:07:49 PAGE 2   
+
+  55          **********************************************************/ 
+  56          void  main(void)
+  57          {
+  58   1              uint8 idata nAsrRes;
+  59   1              uint8 i=0;
+  60   1              Led_test();
+  61   1              MCU_init();
+  62   1              LD_Reset();
+  63   1              UartIni(); /*串口初始化*/
+  64   1              nAsrStatus = LD_ASR_NONE;               //      初始状态：没有在作ASR
+  65   1              
+  66   1              #ifdef TEST     
+  67   1              PrintCom("口令：1、开灯1\r\n"); /*text.....*/
+  68   1              PrintCom("         2、开灯2\r\n"); /*text.....*/
+  69   1              PrintCom("         3、开灯3\r\n"); /*text.....*/
+  70   1              PrintCom("         4、关灯1\r\n"); /*text.....*/
+  71   1              PrintCom("     5、关灯2\r\n"); /*text.....*/
+  72   1              PrintCom("         6、关灯3\r\n"); /*text.....*/
+  73   1              PrintCom("     7、开灯\r\n"); /*text.....*/
+  74   1              PrintCom("     8、关灯\r\n"); /*text.....*/
+  75   1              PrintCom("         9、关声音\r\n"); /*text.....*/
+  76   1              PrintCom("         10、放音乐\r\n"); /*text.....*/
+  77   1              #endif
+  78   1      
+  79   1              while(1)
+  80   1              {
+  81   2                      switch(nAsrStatus)
+  82   2                      {
+  83   3                              case LD_ASR_RUNING:
+  84   3                              case LD_ASR_ERROR:              
+  85   3                                      break;
+  86   3                              case LD_ASR_NONE:
+  87   3                              {
+  88   4                                      nAsrStatus=LD_ASR_RUNING;
+  89   4                                      if (RunASR()==0)        /*      启动一次ASR识别流程：ASR初始化，ASR添加关键词语，启动ASR运算*/
+  90   4                                      {
+  91   5                                              nAsrStatus = LD_ASR_ERROR;
+  92   5                                      }
+  93   4                                      break;
+  94   4                              }
+  95   3                              case LD_ASR_FOUNDOK: /* 一次ASR识别流程结束，去取ASR识别结果*/
+  96   3                              {                               
+  97   4                                      nAsrRes = LD_GetResult();               /*获取结果*/
+  98   4                                      User_handle(nAsrRes);//用户执行函数 
+  99   4                                      nAsrStatus = LD_ASR_NONE;
+ 100   4                                      break;
+ 101   4                              }
+ 102   3                              case LD_ASR_FOUNDZERO:
+ 103   3                              default:
+ 104   3                              {
+ 105   4                                      nAsrStatus = LD_ASR_NONE;
+ 106   4                                      break;
+ 107   4                              }
+ 108   3                      }// switch                              
+ 109   2              }// while
+ 110   1      
+ 111   1      }
+ 112          /***********************************************************
+ 113          * 名    称：     LED灯测试
+ 114          * 功    能： 单片机是否工作指示
+ 115          * 入口参数： 无 
+ 116          * 出口参数：无
+C51 COMPILER V9.00   MAIN                                                                  06/22/2019 14:07:49 PAGE 3   
+
+ 117          * 说    明：                                     
+ 118          **********************************************************/
+ 119          void Led_test(void)
+ 120          {
+ 121   1              LED=~ LED;
+ 122   1              Delay200ms();
+ 123   1              LED=~ LED;
+ 124   1              Delay200ms();
+ 125   1              LED=~ LED;
+ 126   1              Delay200ms();
+ 127   1              LED=~ LED;
+ 128   1              Delay200ms();
+ 129   1              LED=~ LED;
+ 130   1              Delay200ms();
+ 131   1              LED=~ LED;
+ 132   1      }
+ 133          /***********************************************************
+ 134          * 名    称： void MCU_init()
+ 135          * 功    能： 单片机初始化
+ 136          * 入口参数：  
+ 137          * 出口参数：
+ 138          * 说    明：                                     
+ 139          * 调用方法： 
+ 140          **********************************************************/ 
+ 141          void MCU_init()
+ 142          {
+ 143   1              P0 = 0xff;
+ 144   1              P1 = 0x00;
+ 145   1              P2 = 0xff;
+ 146   1              P3 = 0xff;
+ 147   1              P4 = 0xff;
+ 148   1              P1M1=0;
+ 149   1              P1M0=0xff;
+ 150   1              LD_MODE = 0;            //      设置MD管脚为低，并行模式读写
+ 151   1              IE0=1;
+ 152   1              EX0=1;
+ 153   1              EA=1;
+ 154   1      }
+ 155          /***********************************************************
+ 156          * 名    称：    延时函数
+ 157          * 功    能：
+ 158          * 入口参数：  
+ 159          * 出口参数：
+ 160          * 说    明：                                     
+ 161          * 调用方法： 
+ 162          **********************************************************/ 
+ 163          void Delay200us()               //@22.1184MHz
+ 164          {
+ 165   1              unsigned char i, j;
+ 166   1              _nop_();
+ 167   1              _nop_();
+ 168   1              i = 5;
+ 169   1              j = 73;
+ 170   1              do
+ 171   1              {
+ 172   2                      while (--j);
+ 173   2              } while (--i);
+ 174   1      }
+ 175          
+ 176          void  delay(unsigned long uldata)
+ 177          {
+ 178   1              unsigned int j  =  0;
+C51 COMPILER V9.00   MAIN                                                                  06/22/2019 14:07:49 PAGE 4   
+
+ 179   1              unsigned int g  =  0;
+ 180   1              while(uldata--)
+ 181   1              Delay200us();
+ 182   1      }
+ 183          
+ 184          void Delay200ms()               //@22.1184MHz
+ 185          {
+ 186   1              unsigned char i, j, k;
+ 187   1      
+ 188   1              i = 17;
+ 189   1              j = 208;
+ 190   1              k = 27;
+ 191   1              do
+ 192   1              {
+ 193   2                      do
+ 194   2                      {
+ 195   3                              while (--k);
+ 196   3                      } while (--j);
+ 197   2              } while (--i);
+ 198   1      }
+ 199          
+ 200          /***********************************************************
+ 201          * 名    称： 中断处理函数
+ 202          * 功    能：
+ 203          * 入口参数：  
+ 204          * 出口参数：
+ 205          * 说    明：                                     
+ 206          * 调用方法： 
+ 207          **********************************************************/ 
+ 208          void ExtInt0Handler(void) interrupt 0  
+ 209          {       
+ 210   1              ProcessInt0();                          /*      LD3320 送出中断信号，包括ASR和播放MP3的中断，需要在中断处理函数中分别处理*/
+ 211   1      }
+ 212          /***********************************************************
+ 213          * 名    称：用户执行函数 
+ 214          * 功    能：识别成功后，执行动作可在此进行修改 
+ 215          * 入口参数： 无 
+ 216          * 出口参数：无
+ 217          * 说    明： 通过控制PAx端口的高低电平，从而控制外部继电器的通断                                         
+ 218          **********************************************************/
+ 219          void    User_handle(uint8 dat)
+ 220          {
+ 221   1                               switch(dat)               /*对结果执行相关操作,客户修改*/
+ 222   1                                {
+ 223   2                                        case CODE_KFBYZ:                      /*命令“测试”*/
+ 224   2                                                      PrintCom("“开灯1”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 225   2                                                      LED1=1;
+ 226   2                                                      
+ 227   2                                                                                                               break;
+ 228   2                                              case CODE_DMCS:  /*命令“全开”*/
+ 229   2                                                      PrintCom("“开灯2”命令识别成功\r\n");//串口输出提示信息（可删除）
+ 230   2                                                      LED2=1;
+ 231   2                                              
+ 232   2                                                                                                               break;
+ 233   2                                              case CODE_KD:           /*命令“复位”*/                                
+ 234   2                                                      PrintCom("“开灯3”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 235   2                                                      LED3=1;
+ 236   2                                                      
+ 237   2                                                                                                              break;
+ 238   2                                              case CODE_GD:           /*命令“复位”*/                                
+ 239   2                                                      PrintCom("“关灯1”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 240   2                                                      LED1=0;
+C51 COMPILER V9.00   MAIN                                                                  06/22/2019 14:07:49 PAGE 5   
+
+ 241   2                                              
+ 242   2                                                                                                              break;
+ 243   2                                              case CODE_BJ:           /*命令“复位”*/                                
+ 244   2                                                      PrintCom("“关灯2”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 245   2                                                      LED2=0;
+ 246   2                                                      
+ 247   2                                                                                                              break;
+ 248   2                                              case CODE_SH:           /*命令“复位”*/                                
+ 249   2                                                      PrintCom("“关灯3”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 250   2                                                      LED3=0;
+ 251   2                                                                                                              break;
+ 252   2                                              case CODE_GZ:           /*命令“复位”*/                                
+ 253   2                                                      PrintCom("“开灯”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 254   2                                                      LED1=1;
+ 255   2                                                      LED2=1;
+ 256   2                                                      LED3=1;
+ 257   2                                                                                                              break;  
+ 258   2                                              case CODE_GDA:          /*命令“复位”*/                                
+ 259   2                                                      PrintCom("“关灯”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 260   2                                                      LED1=0;
+ 261   2                                                      LED2=0;
+ 262   2                                                      LED3=0;
+ 263   2                                              
+ 264   2                                                                                                              break;
+ 265   2                                              case CODE_GSY:                                          
+ 266   2                                                      PrintCom("“关声音”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 267   2                                                      ALMC=1;
+ 268   2                                                      MUSIC=1;
+ 269   2                                                                                                              break;
+ 270   2                                              case CODE_FYY:                          
+ 271   2                                                      PrintCom("“放音乐”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 272   2                                                      MUSIC=1;
+ 273   2                                                      ALMC=0;
+ 274   2                                                                                                              break;  
+ 275   2                                                      case CODE_NHYY:                         
+ 276   2                                                      PrintCom("“你好悠悠”命令识别成功\r\n"); //串口输出提示信息（可删除）
+ 277   2                                                      MUSIC=0;
+ 278   2                                                      ALMC=0;
+ 279   2                                                                                                              break;                                                                                                                                                                                                          
+ 280   2                                                              default:PrintCom("请重新识别发口令\r\n"); //串口输出提示信息（可删除）
+ 281   2                                                                                                              break;
+ 282   2                                      }       
+ 283   1      }        
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    538    ----
+   CONSTANT SIZE    =    443    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       9
+   IDATA SIZE       =      1       1
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
